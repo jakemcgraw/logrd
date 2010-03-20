@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>logrd</title>
+    <!--[if IE]><script language="javascript" type="text/javascript" src="../flot/excanvas.min.js"></script><![endif]--> 
+    <script type="text/javascript" src="http://127.0.0.1/~macbook/public/flot/jquery.js"></script> 
+    <script type="text/javascript" src="http://127.0.0.1/~macbook/public/flot/jquery.flot.js"></script>
+    <script type="text/javascript">
+    $(function () {
+        var options = {
+            lines: { show: true },
+            points: { show: true },
+            xaxis: { tickDecimals: 0, tickSize: 1 }
+        };
+        var data = [];
+        var placeholder = $("#placeholder");
+
+        $.plot(placeholder, data, options);
+
+        // fetch one series, adding to what we got
+        var alreadyFetched = {};
+
+        // reset data
+        data = [];
+        alreadyFetched = {};
+
+        $.plot(placeholder, data, options);
+
+        var iteration = 0;
+
+        function fetchData() {
+            ++iteration;
+
+            function onDataReceived(series) {
+                data = [ series ];
+                $.plot($("#placeholder"), data, options);
+            };
+
+            $.ajax({
+                url: "/report.json",
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+
+            if (iteration < 1000)
+                setTimeout(fetchData, 5000);
+            else {
+                data = [];
+                alreadyFetched = {};
+            }
+        };
+
+        setTimeout(fetchData, 1000);
+    });
+    </script>
+  </head>
+  <body>
+    <h1>logrd</h1>
+    <div id="placeholder" style="width:600px;height:300px;"></div>
+    <p>&copy; Jake McGraw</p>
+  </body>
+</html>
